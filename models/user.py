@@ -6,6 +6,7 @@ class User(Model):
     User 是一个保存用户数据的 model
     现在只有两个属性 username 和 password
     """
+
     def __init__(self, form):
         self.id = form.get('id', None)
         self.username = form.get('username', '')
@@ -26,6 +27,18 @@ class User(Model):
         s = hashlib.sha256(p)
         # 返回摘要字符串
         return s.hexdigest()
+
+    @classmethod
+    def register(cls, form):
+        name = form.get('username', '')
+        pwd = form.get('password', '')
+        if len(name) > 2 and User.find_by(username=name) is None:
+            u = User.new(form)
+            u.password = u.salted_password(pwd)
+            u.save()
+            return u
+        else:
+            return None
 
     def validate_register(self):
         pwd = self.password
